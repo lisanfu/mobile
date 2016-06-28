@@ -1,7 +1,10 @@
 package com.example.hp.mobile;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,6 +16,10 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -155,12 +162,138 @@ public class SetActivity extends ListActivity {
         {
             LayoutInflater mLI=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             final LinearLayout mLL=(LinearLayout)mLI.inflate(R.layout.set_protected,null);
-            final EditText mPW_Enter=(EditText)mLL.findViewById(R.)
+            final EditText mPW_Enter=(EditText)mLL.findViewById(R.id.protected_pw_enter);
+            final EditText mPW_confirm=(EditText)mLL.findViewById(R.id.protected_pw_confirm);
+            final EditText mPW_Question=(EditText)mLL.findViewById(R.id.protected_pw_question);
+            final EditText mPW_Answer=(EditText)mLL.findViewById(R.id.protected_pw_answer);
+            new AlertDialog.Builder(SetActivity.this)
+                    .setTitle("密码保护设置")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            String pw_enter=mPW_Enter.getText().toString();
+                            String pw_confirm=mPW_confirm.getText().toString();
+                            String pw_question=mPW_Question.getText().toString();
+                            String pw_answer=mPW_Answer.getText().toString();
+                            if(mPW_Enter.length()!=0&&mPW_confirm.length()!=0&&mPW_Answer.length()!=0&&mPW_Question.length()!=0&&pw_enter.equals(pw_confirm))
+                            {
+                                mSharedPreferences=getSharedPreferences("SharedPreferences",Context.MODE_PRIVATE);
+                                SharedPreferences.Editor mEditor=mSharedPreferences.edit();
+                                mEditor.putString("mPW",pw_enter);
+                                mEditor.putString("PW_Question",pw_question);
+                                mEditor.putString("mPW_Answer",pw_answer);
+                                mEditor.commit();
+                            }
+                            else
+                            {
+                                Toast.makeText(SetActivity.this,"输入错误",Toast.LENGTH_LONG).show();
+                                canclePwProtected();
+                            }
+
+                        }
+                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+               canclePwProtected();
+                }
+            }).show();
+
         }
     }
+    /**
+     * 取消密码保护选中状态
+     * */
+    private  void canclePwProtected()
+    {
+        MainActivity.isCheckBoxChecked[5]=false;
+        setListAdapter(new SetAdapter(SetActivity.this));
+    }
+    String hourStr;
+    String minuteStr;
+    /**
+     *时间设置
+    * */
+    private void setUnDisturbedTime(final int start_or_end, final String hour, String minute)
+    {
 
+                new TimePickerDialog(SetActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+                        String mStartTime[]=MainActivity.mStartTime.split(":");
+                         String mEndTime[]=MainActivity.mEndTime.split(":");
+                          if(start_or_end==1)
+                          {
+                                hourStr = (hour<10?"0"+hour:""+hour);
+                                minuteStr = (minute<10?"0"+minute:""+minute);
+                                if(hourStr.equals(mEndTime[0])&&minuteStr.equals(mEndTime[1]))
+                                {
+                                    Toast.makeText(getApplicationContext(), "不能输入一样的时间!", Toast.LENGTH_SHORT).show();
+                                                        setUndisturbedTime(1,mStartTime[0],mStartTime[1]);
+                                }else{
+                                            MainActivity.mStartTime = hourStr+":"+minuteStr;
+                                }
+                          }  else
+                          {
+                               hourStr=(hour<10?"0"+hour:""+hour);
+                              minuteStr=(minute<10?")"+minute:""+minute);
+                              if(mStartTime[0].equals(hourStr)&&mStartTime[1].equals(minuteStr))
+                              {
+                                  Toast.makeText(getApplicationContext(),"不能输入一样的时间",Toast.LENGTH_SHORT).show();
+                                  setUnDisturbedTime(2,mEndTime[0],mEndTime[1]);
+                              }
+                          }
+                        setListAdapter(new SetAdapter(SetActivity.this));
+                    }
+                },Integer.valueOf(hour),Integer.valueOf(minute),true).show();
+    }
+    /**
+     * 夜间免打扰模式选择框
+     * 包含拦截短信，拦截电话，拦截短信和电话以及关闭
+     *
+     * */
+    private  void initUnDisturbedDialog()
+    {
+        LayoutInflater mLI=(LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LinearLayout mLL=(LinearLayout)mLI.inflate(R.layout.set_undisturbed,null);
+        final RadioGroup mRG=(RadioGroup)mLL.findViewById(R.id.RadioGroup01);
+        final RadioButton mRB1=(RadioButton)mLL.findViewById(R.id.RadioButton01);
+        final RadioButton mRB2=(RadioButton)mLL.findViewById(R.id.RadioButton02);
+        final RadioButton mRB3=(RadioButton)mLL.findViewById(R.id.RadioButton03);
+        final RadioButton mRB4=(RadioButton)mLL.findViewById(R.id.RadioButton04);
+        RadioGroup.OnCheckedChangeListener mOCCL=new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i==mRB1.getId())
+                {
+                    MainActivity.mUndisturbedContent="拦截短信";
 
+                }else if(i==mRB2.getId())
+                {
+                    MainActivity.mUndisturbedContent="拦截电话";
+                } else if(i==mRB3.getId())
+                {
+                    MainActivity.mUndisturbedContent="拦截短信和电话";
 
+                }   else if(i==mRB4.getId())
+                {
+                    MainActivity.mUndisturbedContent="关闭";
+
+                }
+            }
+        };
+        mRG.setOnCheckedChangeListener(mOCCL);
+        new AlertDialog.Builder(this)
+                .setTitle("请选择")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        setListAdapter(new SetAdapter(SetActivity.this));
+                    }
+                }).show();
+    }
+    /**
+     * 自定义适配器
+     * */
 
 
 
