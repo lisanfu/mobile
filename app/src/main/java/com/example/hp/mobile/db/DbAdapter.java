@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.hp.mobile.info.Call_Forbid_Info;
 import com.example.hp.mobile.info.Call_Record_Info;
 import com.example.hp.mobile.info.Message_Forbid_Info;
 import com.example.hp.mobile.info.Message_Rubbish_Info;
@@ -119,7 +120,7 @@ public class DbAdapter {
          long rowId=mSQLiteDatabase.insert(MESSAGE_FORBID_TABLE_NAME,null,mValues);
          return rowId;
      }
-    public Long getAdd(Call_Record_Info mInfo)
+    public Long getAdd(Call_Forbid_Info mInfo)
     {
         ContentValues mValues=new ContentValues();
         mValues.put(CALL_RECORD_AREA,mInfo.getCall_record_area());

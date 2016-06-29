@@ -255,8 +255,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                MainActivity.this.startActivity(intent);
                 break;
             case R.id.ImageView02:
-              //  intent =new Intent(MainActivity.this,CallActivity.class);
-               // MainActivity.this.startActivity(intent);
+                intent =new Intent(MainActivity.this,CallActivity.class);
+                MainActivity.this.startActivity(intent);
                 break;
             case R.id.ImageView03:
                 phoneArea();
@@ -268,8 +268,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 smartSet();
                 break;
             case R.id.ImageView06:
-               // intent=new Intent(MainActivity.this,SetActivity.class);
-               // MainActivity.this.startActivity(intent);
+                intent=new Intent(MainActivity.this,SetActivity.class);
+                MainActivity.this.startActivity(intent);
                 break;
         }
     }
