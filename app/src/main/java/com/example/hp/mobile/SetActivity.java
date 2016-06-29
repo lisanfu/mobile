@@ -12,16 +12,23 @@ import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by hp on 2016/6/27.
@@ -43,7 +50,7 @@ public class SetActivity extends ListActivity {
         int hourS=mCalendar.get(Calendar.HOUR_OF_DAY);
         int minuteS=mCalendar.get(Calendar.MINUTE);
         MainActivity.mStartTime=(hourS<10?"0"+hourS:"hourS")+":"+(minuteS<10?"0"+minuteS:minuteS);
-        mCalendar.setTimeInMillis(mSharedPreferences.getLong("UndisturbedEndTime"，System.currentTimeMillis()+600000000L));
+        mCalendar.setTimeInMillis(mSharedPreferences.getLong("UndisturbedEndTime",System.currentTimeMillis()+600000000L));
         int hourE=mCalendar.get(Calendar.HOUR_OF_DAY);
         int minuteE=mCalendar.get(Calendar.MINUTE);
         MainActivity.mEndTime=(hourE<10?"0"+hourE:hourE)+":"+(minuteE<10?"0"+minuteE:minuteE);
@@ -135,7 +142,7 @@ public class SetActivity extends ListActivity {
                       break;
                   case 1:
                       String mStartTime[]=MainActivity.mStartTime.split(":");
-                      setUnDisturbedTime(1,mStartTime[0],mStartTime[1]);
+                      setUndisturbedTime(1,mStartTime[0],mStartTime[1]);
                       break;
                   case 2:
                       String mEndTime[]=MainActivity.mEndTime.split(":");
@@ -213,7 +220,7 @@ public class SetActivity extends ListActivity {
     /**
      *时间设置
     * */
-    private void setUnDisturbedTime(final int start_or_end, final String hour, String minute)
+    private void setUndisturbedTime(final int start_or_end, final String hour, String minute)
     {
 
                 new TimePickerDialog(SetActivity.this, new TimePickerDialog.OnTimeSetListener() {
@@ -239,7 +246,7 @@ public class SetActivity extends ListActivity {
                               if(mStartTime[0].equals(hourStr)&&mStartTime[1].equals(minuteStr))
                               {
                                   Toast.makeText(getApplicationContext(),"不能输入一样的时间",Toast.LENGTH_SHORT).show();
-                                  setUnDisturbedTime(2,mEndTime[0],mEndTime[1]);
+                                  setUndisturbedTime(2,mEndTime[0],mEndTime[1]);
                               }
                           }
                         setListAdapter(new SetAdapter(SetActivity.this));
@@ -294,33 +301,73 @@ public class SetActivity extends ListActivity {
     /**
      * 自定义适配器
      * */
+    class SetAdapter extends BaseAdapter
+    {
+        private ArrayList<Map<String,String>> mList=new ArrayList<Map<String,String>>();
+        private Map<String,String> mMap;
+        private String[] mTitle={"夜间免打扰模式","开始时间设置","结束时间设置","拒收短信","拒接电话","密码保护",
+        "开机启动","自动IP拨号","敏感词设置"};
+        private String[] mContent={MainActivity.mUndisturbedContent,MainActivity.mStartTime
+        ,MainActivity.mEndTime,"屏蔽一切短信","不接受任何人的骚扰","设置密码更安全","开机启动更方便","IP拨号小助手","自定义的敏感词汇"};
 
+        public  SetAdapter(Context context)
+        {
+            Log.d("debug","SetAdapter");
+            initListData();
+        }
+        public void initListData()
+        {
+            for(int i=0;i!=9;i++)
+            {
+                mMap=new HashMap<String,String>();
+                mMap.put("set_title",mTitle[i]);
+                mMap.put("set_content",mContent[i]);
+                mList.add(mMap);
+            }
+        }
+        @Override
+        public int getCount() {
+            return mList.size();
+        }
 
+        @Override
+        public Object getItem(int i) {
+            return mList.get(i);
+        }
 
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
 
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
 
+            LayoutInflater mLI=(LayoutInflater)SetActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            RelativeLayout mLL=(RelativeLayout)mLI.inflate(R.layout.set_listview,null);
+            TextView mTitle=(TextView)mLL.findViewById(R.id.set_title);
+            TextView mContent=(TextView)mLL.findViewById(R.id.set_content);
+            final CheckBox mCheckBox=(CheckBox)mLL.findViewById(R.id.set_checkbox);
+            mTitle.setText(mList.get(i).get("set_title"));
+            mContent.setText(mList.get(i).get("set_content"));
+            mCheckBox.setFocusable(false);
+            mCheckBox.setEnabled(false);
+            if(MainActivity.isCheckBoxChecked[i]==true)
+            {
+                mCheckBox.setChecked(true);
+            }
+            else
+            {
+                mCheckBox.setChecked(false);
+            }
+            if(i==0||i==1||i==2||i==7||i==8)
+            {
+                mCheckBox.setVisibility(View.GONE);
+            }
+            return mLL;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        }
     }
+
+
 }
